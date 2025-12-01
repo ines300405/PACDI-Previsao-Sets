@@ -1,0 +1,220 @@
+------    Mongo    --------------
+
+-------------Extrair para csv a base de dados
+
+# Importar para o mongodb (meter a diretoria do ficheiro até à pasta "atpplayers")
+mongoimport --db atp --collection atp --file "C:\diretoria\atpplayers\atpplayers.json"
+
+# Exportar para csv para o Python (meter a diretoria até à pasta "base_de_dados_inicial")
+mongoexport --db atp --collection atp --type=csv --out "C:\diretoria\base_de_dados_inicial\atp_export.csv" --fields PlayerName,Born,Height,Hand,LinkPlayer,Tournament,Location,Date,Ground,Prize,GameRound,GameRank,Oponent,WL,Score
+
+
+
+------    Python    --------------
+
+-------------Extrair os dados referentes à Bélgica e Relatório sobre as variáveis -> pasta: "base_de_dados_inicial" - ficheiro_inicial.py
+
+1 - Selecionar apenas os jogos na Bélgica
+
+Ficheiro de input: atp_export.csv
+Ficheiro de output: locations_unicas.csv
+Ficheiro de input: locations_final.csv
+Ficheiro de output: torneios_belgica.csv
+
+2 - Visualizar a quantidade de dados omissos, por variável, estatísticas descritivas (variáveis numéricas) e número de categorias (variáveis categóricas) na base de dados
+
+Ficheiro de output: relatorio_var_categoricas.csv
+Ficheiro de output: relatorio_var_numericas.csv
+
+
+
+-------------Retirar dados dos sites ATP e tennisexplorer, por webscraping, e juntar as informações obtidas ao dataset -> pasta "ficheiro_1" - pacd_pred_1.py
+
+3 - Extrair os jogadores da coluna "PlayerName" com informações em falta em pelo menos uma destas colunas: Born, Height e Hand
+
+Ficheiro de input: torneios_belgica.csv
+Ficheiro de output: df_all_players.csv
+
+4 - Retirar informação (Born, Height, Hand e DOB) do site ATP através de um web scraping -> web_scraping_playernames.py
+
+Ficheiro de input: df_all_players.csv
+Ficheiro de output como checkpoint: df_all_players_checkpoint.csv
+Ficheiro de output: df_all_players_complete.csv
+
+5 - Como tinhamos muitas Hands vazias fizemos outro web scraping para ir buscar essa informação ao site Tennis Explorer -> scraping_hand_tennisexplorer.py
+
+Ficheiro de input: df_all_players_complete.csv
+Ficheiro de output: jogadores_final.csv
+
+6 - Juntar as informações dos 2 web scrapings sobre os PlayerNames extraídos num ficheiro apenas
+
+Ficheiro de input: df_all_players_complete.csv
+Ficheiro de input: jogadores_final.csv
+
+7 - Jogadores que estão apenas no campo Oponent: web scraping para ir buscar informações ao site Tennis Explorer através do apelido -> web_scraping_oponents.py
+
+Ficheiro de input: torneios_belgica.csv
+Ficheiro de output: df_oponents_complete.csv
+
+8 - Limpar as variáveis Hand e DOB relativas aos Oponents (ponto 7) para ficarem iguais às dos PlayerNames
+
+Ficheiro de input: df_oponents_complete.csv
+
+9 - Tratar a variável Oponent (eliminar Oponent "bye")
+
+10 - Tratar a variável Score e adicionar 2 colunas Sets (Target) e Games
+
+11 - Tratar a variável Prize adicionando 2 colunas PrizeAmount (Prémio do Torneio) e Currency (moeda)
+
+12 - Extrair os PlayerNames que têm todas as informações (características do jogador) utilizando o ficheiro antes do primeiro web scraping (ponto 3)
+
+Ficheiro de output: df_playernames_dob.csv
+
+13 - Coluna DOB: retirar informação do site ATP através de um web scraping -> webscrap_dob_playernames.py
+
+Ficheiro de input: df_playernames_dob.csv
+Ficheiro de output como checkpoint: df_playernames_dob_checkpoint.csv
+Ficheiro de output: df_playernames_dob_complete.csv
+
+14 - PlayerName: juntar as informações obtidas através do web scraping ao dataframe dos jogos
+
+Ficheiro de input: df_playernames_dob_complete.csv
+
+15 - Oponent: juntar as informações obtidas através do web scraping ao dataframe dos jogos
+
+Ficheiro de output: pacd_1.csv
+
+
+
+-------------Alterações às colunas do dataset -> pasta: "ficheiro_2" - pacd_pred_2.py
+
+16 - Hand: separar em 2 colunas Hand e BackHand
+
+Ficheiro de input: pacd_1.csv
+
+17 - Date: separar em duas colunas Start e End e ainda uma coluna com o número de dias do Torneio "Days"
+
+18 - Born: separar em 4 colunas Born 1, 2, 3 e 4 e filtrar para 2 colunas City e Country
+
+Ficheiro de input: cities_and_countries.csv
+
+19 - Location: separar em 3 colunas Location 1, 2 e 3 e filtrar para 1 coluna Location_City
+
+Ficheiro de output: pacd_2.csv
+
+-------------Buscar dados da variável rank, eliminar jogos e ordenar dataset -> pasta: "ficheiro_3" - pacd_pred_3.py
+
+20 - Rank: criar 1 ficheiro - jogadores que não tinham rank associado para um novo web scraping
+
+Ficheiro de input: pacd_2.csv
+Ficheiro de output: ws_ranks.json
+
+21 - Web scraping Rank: buscar o rank através do LinkPlayer, Date e Player -> web_scraping_gamerank.py
+
+Ficheiro de input: ws_ranks.json
+Ficheiro de output: rankings_por_jogador.csv
+
+22 - Atualizar os ranks para que fique completo
+
+Ficheiro de input: rankings_por_jogador.csv
+
+23 - Rank: criar a coluna Rank_Player e substituir nos jogos que são duplicados
+
+24 - Rank: existia ranks em falta para o PlayerName
+
+Ficheiro de output - ws_ranks_em_falta.json
+
+25 - Rank: Usar outra vez o web scraping para os jogadores que faltam -> web_scraping_gamerank.py
+
+Ficheiro de input: ws_ranks_em_falta.json
+Ficheiro de output: ranks_em_falta.csv
+
+26 - Rank: Juntar os ranks que faltavam
+
+Ficheiro de input: ranks_em_falta.csv
+
+27 - Limpar jogos duplicados
+
+Ficheiro de output: df_limpo_atual.csv
+
+28 - Limpar jogos à melhor de 5
+
+29 - Organizar o dataset: ordenar colunas, melhorar a consistência dos dados (zeros/Unknown/- : passar para None) -> organizar_df.py
+
+Ficheiro de output: pacd_3.csv
+
+
+
+-------------Criação de novas variáveis -> pasta: "ficheiro_4" - pacd_pred_4.py
+
+30 - Criar uma variável com a diferença entre os ranks
+
+Ficheiro de input: pacd_3.csv
+
+31 - Criar 4 variáveis com a idade dos jogadores (Age, Age_Op, Age_Difference e Age_Gap )
+
+32 - Tratar a variável Prize (Inflacionar os prémios para o preço atual em 2025)
+
+Ficheiro de input: cpi_euro.txt
+Ficheiro de input: cpi_usd.txt
+
+33 - Ficheiro para buscar o weight dos jogadores com Altura para calcular o imc
+
+Ficheiro de input: df_limpo_atual.csv
+Ficheiro de output: players_to_weight.csv
+
+34 - Web scraping para o weight -> web_scraping_weights.py
+
+Ficheiro de input: players_to_weight.csv
+Ficheiro de output: players_to_weight_complete.csv
+
+35 - Juntar os pesos obtidos ao dataset
+
+Ficheiro de input: players_to_weight_complete.csv
+
+36 - Calcular o IMC do jogador (que têm peso e altura associado)
+
+Ficheiro de output: pacd_4.csv
+
+-------------Criação de novas variáveis relacionadas com percentagens -> pasta: "ficheiro_5" - pacd_pred_5.py
+
+37 - Percentagem de vitórias por jogador e por tipo de ronda (até ao jogo) e diferenças
+
+Ficheiro de input: pacd_4.csv
+
+38 - Percentagem de vitórias por jogador e por tipo de Ground (até ao jogo) e diferenças
+
+39 - Juntar Hand e Hand_Op / Backhand e Backhand_Op em duas colunas apenas
+
+40 - Percentagem de vitórias nos últimos 5 jogos e diferenças
+
+41 - Percentagem de sets vencidos nos últimos 5 jogos e diferenças
+
+42 - Criação das colunas: H2H, H2H_Op e N_Games e diferenças
+
+Ficheiro de output: df_modelos.csv
+Ficheiro de output: new_vars_df.csv
+
+-------------modelos -> pasta: "modelos"
+
+43 - Tratar valores omissos -> tratar_NAs.py
+
+Ficheiro de input: df_modelos.csv
+Ficheiro de output: df_sem_NA.csv
+
+------    RStudio    --------------
+
+44 - boxplots, gráficos e correlações -> correlacoes.Rmd
+
+Ficheiro de input: df_modelos.csv
+Ficheiro de input: df_sem_NA.csv
+
+------    Python    --------------
+
+45 - modelos -> main.py, colorsText.py e modelling.py
+
+Ficheiro de input: df_sem_NA.csv
+
+cria a pasta: "__pycache__" - guarda versões em bytecode dos ficheiros colorsText.py e modelling.py
+Cria a pasta: "final_evaluation" - 2 imagens com os cumulative gains e curva ROC do melhor modelo
+Cria a pasta: "variable_importance" - 2 imagens com a importância das variáveis do modelo base e permutação do modelo (melhor modelo)
